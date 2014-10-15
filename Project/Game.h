@@ -19,6 +19,8 @@ private:
 	int frames;
 	int score;
 	double time;
+
+	int numStars;
 	
 	clock_t beginTime;
 	clock_t endTime;

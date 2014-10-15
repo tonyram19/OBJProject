@@ -15,6 +15,23 @@ Game::Game()
 
 	this->LoadFromFile();
 	
+	do {
+		numStars = rand() % 11 + 10;
+	} while (numStars % 2 != 0);
+
+	stars = new Cell[numStars];
+
+	Symbol syms[4] = { '^', '@', '*', 'o' };
+
+	for (int i = 0; i < numStars; i++)
+	{
+		stars[i].bg = static_cast<ConsoleColor>(rand() % 16);
+		stars[i].fg = static_cast<ConsoleColor>(rand() % 16);
+		stars[i].oX = rand() % Console::WindowWidth;
+		stars[i].oY = rand() % Console::WindowHeight;
+		stars[i].sym = syms[rand() % 3];
+	}
+	
 }
 
 
@@ -393,7 +410,6 @@ void Game::Refresh() const
 	//Print player's name
 	Console::ForegroundColor = ConsoleColor::Cyan;
 	cout << sprites[PLAYER]->getName() << "\t\t\t\t\t";
-	cout << sprites.size();
 
 	//Print score
 	Console::ForegroundColor = ConsoleColor::Yellow;
@@ -403,6 +419,10 @@ void Game::Refresh() const
 	Console::ForegroundColor = ConsoleColor::Magenta;
 	cout << "Time " << time;
 
+	//Print stars
+	for (int i = 0; i < numStars; i++)
+		stars[i].Show(0, 0);
+	//Print sprites
 	decltype(sprites.size()) i;
 	for (i = 0; i < sprites.size(); i++)
 		sprites[i]->Show();
