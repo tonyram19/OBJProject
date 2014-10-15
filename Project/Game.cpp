@@ -3,6 +3,9 @@
 
 Game::Game() 
 {
+	Console::WindowWidth = 110;
+	Console::WindowHeight = 60;
+
 	gameIsRunning = true;
 	frames = 0;
 	score = 0;
@@ -37,13 +40,58 @@ Game::Game()
 
 Game::~Game()
 {
-	decltype(sprites.size()) i = 0;
-	for (; i < sprites.size(); ++i)
+	decltype(cells.size()) i = 0;
+	for (; i < cells.size(); ++i)
+		delete cells[i];
+
+	for (i = 0; i < sprites.size(); ++i)
 		delete sprites[i];
 }
 
 void Game::LoadFromFile()
 {
+	int count;
+
+	fin.open("cells.txt");
+	if (fin.is_open())
+	{
+		fin >> count;
+		fin.ignore(INT_MAX, '\n');
+		cells.resize(count);
+
+		for (decltype(cells.size()) i = 0; i < cells.size(); i++)
+		{
+			int x, y;
+			int sym;
+			int fg, bg;
+
+			fin >> x;
+			fin >> y;
+			fin >> fg;
+			fin >> bg;
+			fin >> sym;
+
+			cout << x << y << endl;
+			
+			fin.ignore(INT_MAX, '\n');
+
+			cells[i] = 
+				new Cell(
+					x,
+					y,
+					(ConsoleColor)fg,
+					(ConsoleColor)bg,
+					(wchar_t) sym
+				);
+
+			if (fin.eof())
+				break;
+		}
+
+		fin.close();
+	}
+	Util::Pause();
+
 	string buffer;
 
 	fin.open("images.txt");
@@ -125,7 +173,6 @@ void Game::SaveToBinaryFile()
 
 void Game::ShowHighScores()
 {
-	ifstream fin;
 	BinaryData data;
 	vector<BinaryData> vec;
 
@@ -407,7 +454,12 @@ void Game::Refresh() const
 	LockWindowUpdate(GetConsoleWindow());
 	Console::Clear();
 	
+	//Print stars
+	for (int i = 0; i < numStars; i++)
+		stars[i].Show(0, 0);
+
 	//Print player's name
+	Console::SetCursorPosition(0, 0);
 	Console::ForegroundColor = ConsoleColor::Cyan;
 	cout << sprites[PLAYER]->getName() << "\t\t\t\t\t";
 
@@ -419,13 +471,14 @@ void Game::Refresh() const
 	Console::ForegroundColor = ConsoleColor::Magenta;
 	cout << "Time " << time;
 
-	//Print stars
-	for (int i = 0; i < numStars; i++)
-		stars[i].Show(0, 0);
 	//Print sprites
 	decltype(sprites.size()) i;
 	for (i = 0; i < sprites.size(); i++)
 		sprites[i]->Show();
+
+	//Print cells
+	for (decltype(cells.size())i = 0; i < cells.size(); i++)
+		cells[i]->Show(Console::WindowWidth / 2, Console::WindowHeight / 2);
 	
 	LockWindowUpdate(NULL);
 

@@ -6,3 +6,10 @@ Player	90	23.959
 Bob	4	5.26
 Luis	2	6.011
 Player	0	18.757
+John	2	2.718
+Player	0	4.938
+Player	0	1.188
+Player	0	1.202
+Player	0	1.046
+Player	0	3.98
+Player	2	10.614
