@@ -9,7 +9,7 @@ class Game
 
 private:
 
-	vector<Sprite*> sprites;
+	DList<Sprite*> sprites;
 	vector<Cell<>*> cells;
 	Cell<>* stars;
 

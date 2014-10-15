@@ -11,7 +11,7 @@ Game::Game()
 	score = 0;
 	time = 0;
 	
-	sprites.resize(2);
+//	sprites.resize(2);
 
 	enemyMovementX = 1;
 	enemyMovementY = 0;
@@ -78,8 +78,10 @@ Game::~Game()
 	for (; i < cells.size(); ++i)
 		delete cells[i];
 
-	for (i = 0; i < sprites.size(); ++i)
+	for (i = 0; i < sprites.Size(); ++i)
 		delete sprites[i];
+
+	//sprites.Clear();
 }
 
 void Game::LoadFromFile()
@@ -139,7 +141,7 @@ void Game::LoadFromFile()
 			fin >> fg >> bg;
 			fin.ignore(INT_MAX, '\n');
 
-			sprites[i] =
+			sprites.PushBack(
 				new Sprite
 				(
 					(ConsoleColor)(unsigned int) fg,
@@ -148,7 +150,8 @@ void Game::LoadFromFile()
 					"Player",
 					Console::WindowWidth / 2,
 					Console::WindowHeight / 2
-				);
+				)
+			);
 			i++;
 
 			if (fin.eof())
@@ -355,7 +358,7 @@ void Game::Input()
 		);
 		
 		m->Enable();
-		sprites.push_back(m);
+		sprites.PushBack(m);
 	}
 
 	int dx = 0;
@@ -435,12 +438,12 @@ void Game::Update()
 			);
 
 		m->Enable();
-		sprites.push_back(m);
+		sprites.PushBack(m);
 	}
 
 	//Update the missiles
-	decltype(sprites.size()) i;
-	for (i = 2; i < sprites.size(); i++)
+	decltype(sprites.Size()) i;
+	for (i = 2; i < sprites.Size(); i++)
 	{
 		Missile* m = dynamic_cast<Missile*>(sprites[i]);
 
@@ -458,7 +461,8 @@ void Game::Update()
 			if (m->Collides(sprites[ENEMY]->getLeft(), sprites[ENEMY]->getTop(), sprites[ENEMY]->getWidth(), sprites[ENEMY]->getHeight()))
 			{
 				delete sprites[i];
-				sprites.erase(sprites.begin() + i--);
+				//sprites.erase(sprites.begin() + i--);
+				sprites.Erase(i);
 				score++;
 				continue;
 			}
@@ -469,7 +473,8 @@ void Game::Update()
 			if (m->Collides(sprites[PLAYER]->getLeft(), sprites[PLAYER]->getTop(), sprites[PLAYER]->getWidth(), sprites[PLAYER]->getHeight()))
 			{
 				delete sprites[i];
-				sprites.erase(sprites.begin() + i--); 
+				//sprites.erase(sprites.begin() + i--); 
+				sprites.Erase(i);
 				sprites[PLAYER]->setFg(ConsoleColor::Red);
 				continue;
 			}
@@ -479,7 +484,8 @@ void Game::Update()
 			if (m->OutOfBounds(newx, newy))
 			{
 				delete sprites[i];
-				sprites.erase(sprites.begin() + i--); 
+				//sprites.erase(sprites.begin() + i--); 
+				sprites.Erase(i);
 				continue;
 			}
 
@@ -518,8 +524,8 @@ void Game::Refresh() const
 	cout << "Time " << time;
 
 	//Print sprites
-	decltype(sprites.size()) i;
-	for (i = 0; i < sprites.size(); i++)
+	//decltype(sprites.Size()) i;
+	for (int i = 0; i < sprites.Size(); i++)
 		sprites[i]->Show();
 
 	//Print cells

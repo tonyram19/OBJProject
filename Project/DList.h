@@ -24,7 +24,7 @@ public:
 
 	void PushBack(const data& _d);
 	void PushFront(const data& _d);
-	int Size() { return theCount; }
+	int Size() const { return theCount; }
 	void Erase(int index);
 
 	data operator[](int index);
@@ -38,7 +38,7 @@ void DList<data>::PushBack(const data& _d)
 {
 	node* temp = new node(_d, last);
 
-	if (theCount == 0) // if(last)
+	if (theCount == 0)
 		first = temp;
 	else
 		last->next = temp;
@@ -86,7 +86,7 @@ const data DList<data>::operator[](int index) const
 	for (; i < index; ++i)
 		temp = temp->next;
 
-	return temp->data;
+	return temp->nodeData;
 }
 
 
@@ -169,12 +169,6 @@ DList<data>::~DList()
 		delete temp;
 		temp = first;
 	}
-	/*
-	while (temp)
-	{
-	first = first->next;
-	delete temp;
-	temp = first;
-	}
-	*/
+
+
 }
