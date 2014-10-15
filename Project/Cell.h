@@ -10,7 +10,10 @@ struct Cell
 	Cell() { }
 	Cell(Offset oX, Offset oY, ConsoleColor fg, ConsoleColor bg, Symbol sym);
 
-	bool Show(int left, int top) const;
+	bool Show(int left, int top) const; 
+
+	Offset operator[](int index);
+	const Offset operator[](int index) const;
 };
 
 template <class Offset = signed char, class Symbol = wchar_t>
@@ -37,4 +40,28 @@ bool Cell<Offset, Symbol>::Show(int left, int top) const
 	Console::ResetColor();
 
 	return true;
+}
+
+template <class Offset = signed char, class Symbol = wchar_t>
+Offset Cell<Offset, Symbol>::operator[](int index)
+{
+	if (index == 0)
+		return this->oX;
+	if (index == 1)
+		return this->oY;
+
+	cerr << "Error, index not valid";
+	return;
+}
+
+template <class Offset = signed char, class Symbol = wchar_t>
+const Offset Cell<Offset, Symbol>::operator[](int index) const
+{
+	if (index == 0)
+		return this->oX;
+	if (index == 1)
+		return this->oY;
+
+	clog << "Error, index not valid";
+	return -1;
 }

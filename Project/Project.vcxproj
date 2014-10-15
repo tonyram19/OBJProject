@@ -83,6 +83,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Cell.h" />
+    <ClInclude Include="DList.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Image2D.h" />
     <ClInclude Include="Missile.h" />
@@ -97,6 +98,7 @@
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="Cell.cpp" />
+    <ClCompile Include="DList.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Image2D.cpp" />
     <ClCompile Include="main.cpp" />

@@ -37,6 +37,38 @@ Game::Game()
 		stars[i].sym = syms[rand() % 3];
 	}
 	
+#if 0
+	const Cell<long double, unsigned long long> testCell;
+	cout << testCell[-1];
+	Util::Pause();
+#elif 0
+	typedef DList<char> OurDList;
+	OurDList testDList;
+	testDList.PushBack('#');
+	testDList.PushBack('@');
+	testDList.Clear();
+	testDList.PushBack('i');
+	testDList.PushFront('r');
+	testDList.PushFront('h');
+	testDList.PushBack('s');
+	testDList.PushFront('t');
+	testDList.Erase(2);
+	testDList.Erase(0);
+	testDList.Erase(2);
+	for (int i = 0; i < testDList.Size(); i++)
+		cout << testDList[i];
+	testDList.Erase(0);
+	testDList.Erase(0);
+	testDList.PushFront('!');
+	testDList.PushBack('\"');
+	testDList.Erase(1);
+	for (int i = 0; i < testDList.Size(); i++)
+		cout << testDList[i];
+	cout << flush << endl;
+	system("pause");
+
+#endif
+
 }
 
 
@@ -245,7 +277,7 @@ void Game::ShowHighScores()
 		if (count > 0)
 		{
 			fin.read((char*)vec.data(), sizeof(BinaryData) * count);
-
+			vec.shrink_to_fit();
 			for (decltype(vec.size()) i = 0; i < vec.size(); i++)
 				cout << vec[i].name << "\t" << vec[i].score << "\t" << vec[i].time << endl;
 		}
