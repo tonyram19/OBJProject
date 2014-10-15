@@ -1,0 +1,7 @@
+Tony	77	17.675
+John	47	8.736
+Player	4	11.888
+Bob	43	22.121
+Player	90	23.959
+Bob	4	5.26
+Luis	2	6.011
