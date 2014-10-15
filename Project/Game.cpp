@@ -15,6 +15,8 @@ Game::Game()
 
 	enemyMovementX = 1;
 	enemyMovementY = 0;
+	mapX = 0;
+	mapY = 0;
 
 	this->LoadFromFile();
 	
@@ -22,9 +24,9 @@ Game::Game()
 		numStars = rand() % 11 + 10;
 	} while (numStars % 2 != 0);
 
-	stars = new Cell[numStars];
+	stars = new Cell<>[numStars];
 
-	Symbol syms[4] = { '^', '@', '*', 'o' };
+	signed char syms[4] = { '^', '@', '*', 'o' };
 
 	for (int i = 0; i < numStars; i++)
 	{
@@ -70,13 +72,11 @@ void Game::LoadFromFile()
 			fin >> fg;
 			fin >> bg;
 			fin >> sym;
-
-			cout << x << y << endl;
 			
 			fin.ignore(INT_MAX, '\n');
 
 			cells[i] = 
-				new Cell(
+				new Cell<>(
 					x,
 					y,
 					(ConsoleColor)fg,
@@ -90,7 +90,6 @@ void Game::LoadFromFile()
 
 		fin.close();
 	}
-	Util::Pause();
 
 	string buffer;
 
@@ -243,10 +242,13 @@ void Game::ShowHighScores()
 		cout << "BINARY ALL:" << endl << endl;
 		cout << "Name\tScore\tTime\t" << endl << endl;
 
-		fin.read((char*)vec.data(), sizeof(BinaryData) * count);
+		if (count > 0)
+		{
+			fin.read((char*)vec.data(), sizeof(BinaryData) * count);
 
-		for (decltype(vec.size()) i = 0; i < vec.size(); i++)
-			cout << vec[i].name << "\t" << vec[i].score << "\t" << vec[i].time << endl;
+			for (decltype(vec.size()) i = 0; i < vec.size(); i++)
+				cout << vec[i].name << "\t" << vec[i].score << "\t" << vec[i].time << endl;
+		}
 
 	}
 
@@ -327,14 +329,26 @@ void Game::Input()
 	int dx = 0;
 	int dy = 0;
 
-	if (GetAsyncKeyState('W')) 
+	if (GetAsyncKeyState('W'))
+	{
 		dy = -1;
+
+	}
 	if (GetAsyncKeyState('S')) 
+	{ 
 		dy = 1;
-	if (GetAsyncKeyState('A')) 
+
+	}
+	if (GetAsyncKeyState('A'))
+	{
 		dx = -1;
-	if (GetAsyncKeyState('D')) 
+		mapX++;
+	}
+	if (GetAsyncKeyState('D'))
+	{
 		dx = 1;
+		mapX--;
+	}
 
 	if (dx || dy)
 	{
@@ -456,7 +470,7 @@ void Game::Refresh() const
 	
 	//Print stars
 	for (int i = 0; i < numStars; i++)
-		stars[i].Show(0, 0);
+		stars[i].Show(0 + mapX, 0 + mapY);
 
 	//Print player's name
 	Console::SetCursorPosition(0, 0);
@@ -478,7 +492,7 @@ void Game::Refresh() const
 
 	//Print cells
 	for (decltype(cells.size())i = 0; i < cells.size(); i++)
-		cells[i]->Show(Console::WindowWidth / 2, Console::WindowHeight / 2);
+		cells[i]->Show(Console::WindowWidth / 2 + mapX, Console::WindowHeight / 2);
 	
 	LockWindowUpdate(NULL);
 

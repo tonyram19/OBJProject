@@ -10,8 +10,8 @@ class Game
 private:
 
 	vector<Sprite*> sprites;
-	vector<Cell*> cells;
-	Cell* stars;
+	vector<Cell<>*> cells;
+	Cell<>* stars;
 
 	ofstream fout;
 	ifstream fin;
@@ -28,6 +28,8 @@ private:
 
 	int enemyMovementX;
 	int enemyMovementY;
+	int mapX;
+	int mapY;
 
 	struct BinaryData
 	{
