@@ -31,15 +31,6 @@ private:
 	int mapX;
 	int mapY;
 
-	struct BinaryData
-	{
-		char name[31];
-		int score;
-		double time;
-	};
-
-
-
 public:
 
 	Game();
@@ -59,3 +50,9 @@ public:
 
 };
 
+struct BinaryData
+{
+	char name[31];
+	int score;
+	double time;
+};

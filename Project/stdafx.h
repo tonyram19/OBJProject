@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <list>
+#include <algorithm>
 #include <Windows.h>
 using namespace System;
 #include <iostream>

@@ -1,6 +1,28 @@
 #include "stdafx.h"
 #include "Game.h"
 
+//Global sorts
+bool SortScoreDescending(const BinaryData& a, const BinaryData& b)
+{
+	return a.score > b.score;
+}
+
+bool SortTimeDescending(const BinaryData& a, const BinaryData& b)
+{
+	return a.time > b.time;
+}
+
+bool SortNameAscending(const BinaryData& a, const BinaryData& b)
+{
+	return strcmp(a.name, b.name) < 0;
+}
+
+bool SortNameDescending(const BinaryData& a, const BinaryData& b)
+{
+	return strcmp(a.name, b.name) > 0;
+}
+
+
 Game::Game() 
 {
 	Console::WindowWidth = 110;
@@ -214,11 +236,12 @@ void Game::SaveToBinaryFile()
 
 void Game::ShowHighScores()
 {
-	BinaryData data;
+	//BinaryData data;
 	vector<BinaryData> vec;
 
 	cout << "HIGH SCORES" << endl << endl;
 
+#if 0
 	//Read text
 	fin.open("stats.txt");
 	if (fin.is_open())
@@ -228,15 +251,15 @@ void Game::ShowHighScores()
 
 		while (true)
 		{
-			
+
 			fin >> data.name;
 			fin >> data.score;
 			fin >> data.time;
 			fin.ignore(INT_MAX, '\n');
-			
+
 			if (fin.eof())
 				break;
-			
+
 			cout << data.name << "\t" << data.score << "\t" << data.time << endl;
 		}
 
@@ -252,7 +275,7 @@ void Game::ShowHighScores()
 		int count;
 
 		fin.seekg(0, ios_base::end);
-		count = (int) fin.tellg();
+		count = (int)fin.tellg();
 		count = count / sizeof(BinaryData);
 		fin.seekg(0, ios_base::beg);
 		cout << "BINARY:" << endl << endl;
@@ -268,6 +291,7 @@ void Game::ShowHighScores()
 	}
 
 	cout << endl;
+#endif 
 
 	//Read binaryall
 	fin.open("stats.bin", ios_base::binary);
@@ -287,10 +311,36 @@ void Game::ShowHighScores()
 		if (count > 0)
 		{
 			fin.read((char*)&vec[0], sizeof(BinaryData) * count);
-	
-			for (decltype(vec.size()) i = 0; i < vec.size(); i++)
-				cout << vec[i].name << "\t" << vec[i].score << "\t" << vec[i].time << endl;
 		}
+
+		decltype(vec.size()) i;
+		
+		//Sort by name ascending
+		cout << "BY NAME ASCENDING" << endl << endl;
+		sort(vec.begin(), vec.end(), SortNameAscending);
+		for (i = 0; i < vec.size(); i++)
+			cout << vec[i].name << "\t" << vec[i].score << "\t" << vec[i].time << endl;
+		cout << endl;
+
+		//Sort by name descending
+		cout << "BY NAME DESCENDING" << endl << endl;
+		sort(vec.begin(), vec.end(), SortNameDescending);
+		for (i = 0; i < vec.size(); i++)
+			cout << vec[i].name << "\t" << vec[i].score << "\t" << vec[i].time << endl;
+		cout << endl;
+
+		//Sort by time descending
+		cout << "BY TIME DESCENDING" << endl << endl;
+		sort(vec.begin(), vec.end(), SortTimeDescending);
+		for (i = 0; i < vec.size(); i++)
+			cout << vec[i].name << "\t" << vec[i].score << "\t" << vec[i].time << endl;
+		cout << endl;
+
+		//Sort by score ascending
+		cout << "BY SCORE DESCENDING" << endl << endl;
+		sort(vec.begin(), vec.end(), SortScoreDescending);
+		for (i = 0; i < vec.size(); i++)
+			cout << vec[i].name << "\t" << vec[i].score << "\t" << vec[i].time << endl;
 
 	}
 
