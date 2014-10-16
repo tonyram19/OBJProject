@@ -9,7 +9,7 @@ class Game
 
 private:
 
-	DList<Sprite*> sprites;
+	list<Sprite*> sprites;
 	vector<Cell<>*> cells;
 	Cell<>* stars;
 
@@ -47,10 +47,7 @@ public:
 
 	void Play();
 	void Input();
-
-public:
 	void Update();
-public:
 	void Refresh() const;
 	void LoadFromFile();
 	void SaveToFile();

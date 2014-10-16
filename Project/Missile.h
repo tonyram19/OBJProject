@@ -18,7 +18,6 @@ public:
 	void Show() const;
 	void Enable() { this->enabled = true; }
 	void Disable() { this->enabled = false; }
-	bool isEnabled() const { return this->enabled; }
 
 private:
 

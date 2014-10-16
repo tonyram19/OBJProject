@@ -24,6 +24,5 @@ void Missile::GetDeltas(Delta& dx, Delta& dy)
 
 void Missile::Show() const
 {
-	if (this->isEnabled())
-		Sprite::Show();
+	Sprite::Show();
 }

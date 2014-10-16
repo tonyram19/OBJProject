@@ -10,8 +10,6 @@ Game::Game()
 	frames = 0;
 	score = 0;
 	time = 0;
-	
-//	sprites.resize(2);
 
 	enemyMovementX = 1;
 	enemyMovementY = 0;
@@ -36,6 +34,7 @@ Game::Game()
 		stars[i].oY = rand() % Console::WindowHeight;
 		stars[i].sym = syms[rand() % 3];
 	}
+
 	
 #if 0
 	const Cell<long double, unsigned long long> testCell;
@@ -78,10 +77,12 @@ Game::~Game()
 	for (; i < cells.size(); ++i)
 		delete cells[i];
 
-	for (i = 0; i < sprites.Size(); ++i)
-		delete sprites[i];
-
-	//sprites.Clear();
+	auto iter = sprites.begin();
+	while (iter != sprites.end())
+	{
+		delete *iter;
+		++iter;
+	}
 }
 
 void Game::LoadFromFile()
@@ -141,7 +142,7 @@ void Game::LoadFromFile()
 			fin >> fg >> bg;
 			fin.ignore(INT_MAX, '\n');
 
-			sprites.PushBack(
+			sprites.push_back(
 				new Sprite
 				(
 					(ConsoleColor)(unsigned int) fg,
@@ -158,7 +159,10 @@ void Game::LoadFromFile()
 				break;
 		}
 
-		sprites[ENEMY]->setTop(3);
+		auto iter = sprites.begin();
+		iter++; 
+		Sprite* enemy = dynamic_cast<Sprite*>(*iter);
+		enemy->setTop(3);
 
 		fin.close();
 	}
@@ -179,13 +183,14 @@ void Game::SaveToFile()
 
 	if (fout.is_open())
 	{
-		fout << sprites[PLAYER]->getName() << "\t";
+		auto iter = sprites.begin();
+		Sprite* player = dynamic_cast<Sprite*>(*iter);
+		fout << player->getName() << "\t";
 		fout << score << "\t";
 		fout << time << "\n";
 
 		fout.close();
 	}
-
 }
 
 void Game::SaveToBinaryFile()
@@ -193,7 +198,9 @@ void Game::SaveToBinaryFile()
 	ofstream fout("stats.bin", ios_base::app | ios_base::binary);
 
 	BinaryData data;
-	strcpy_s(data.name, 31, sprites[PLAYER]->getName().c_str());
+	auto iter = sprites.begin();
+	Sprite* player = dynamic_cast<Sprite*>(*iter);
+	strcpy_s(data.name, 31, player->getName().c_str());
 	data.score = this->score;
 	data.time = this->time;
 
@@ -279,8 +286,8 @@ void Game::ShowHighScores()
 
 		if (count > 0)
 		{
-			fin.read((char*)vec.data(), sizeof(BinaryData) * count);
-			vec.shrink_to_fit();
+			fin.read((char*)&vec[0], sizeof(BinaryData) * count);
+	
 			for (decltype(vec.size()) i = 0; i < vec.size(); i++)
 				cout << vec[i].name << "\t" << vec[i].score << "\t" << vec[i].time << endl;
 		}
@@ -297,14 +304,20 @@ void Game::Menu()
 	cout << "What's your name? ";
 	getline(cin, name);
 	if (name.length() > 0)
-		sprites[PLAYER]->setName(name);
+	{
+		auto iter = sprites.begin();
+		Sprite* player = dynamic_cast<Sprite*>(*iter);
+		player->setName(name);
+	}
 }
 
 void Game::Summary()
 {
+	auto iter = sprites.begin();
+	Sprite* player = dynamic_cast<Sprite*>(*iter);
 	Console::Clear();
 	cout << "Summary" << endl << endl;
-	cout << "Name: " << sprites[PLAYER]->getName() << endl;
+	cout << "Name: " << player->getName() << endl;
 	cout << "Score: " << score << endl;
 	cout << "Time: " << time;
 	Util::Pause();
@@ -338,6 +351,11 @@ void Game::Play()
 
 void Game::Input()
 {
+	auto iter = sprites.begin();
+	Sprite* player = dynamic_cast<Sprite*>(*iter);
+	iter++;
+	Sprite* enemy = dynamic_cast<Sprite*>(*iter);
+
 	//Quit game
 	if (GetAsyncKeyState(VK_ESCAPE))
 		gameIsRunning = false;
@@ -351,14 +369,14 @@ void Game::Input()
 			ConsoleColor::Black,
 			"*",
 			"Missile",
-			sprites[PLAYER]->getLeft() + 3,
-			sprites[PLAYER]->getTop() - 1,
+			player->getLeft() + 3,
+			player->getTop() - 2,
 			0,
 			-1
 		);
 		
 		m->Enable();
-		sprites.PushBack(m);
+		sprites.push_back(m);
 	}
 
 	int dx = 0;
@@ -385,17 +403,18 @@ void Game::Input()
 		mapX--;
 	}
 
+
 	if (dx || dy)
 	{
-		int newx = sprites[PLAYER]->getLeft() + dx;
-		int newy = sprites[PLAYER]->getTop() + dy;
+		int newx = player->getLeft() + dx;
+		int newy = player->getTop() + dy;
 
-		if (!sprites[ENEMY]->Collides(newx, newy, sprites[PLAYER]->getWidth(), sprites[PLAYER]->getHeight())
+		if (!enemy->Collides(newx, newy, player->getWidth(), player->getHeight())
 			&&
-			!sprites[PLAYER]->OutOfBounds(newx, newy))
+			!player->OutOfBounds(newx, newy))
 		{
-			sprites[PLAYER]->setLeft(newx);
-			sprites[PLAYER]->setTop(newy);
+			player->setLeft(newx);
+			player->setTop(newy);
 		}
 	}
 			
@@ -403,19 +422,24 @@ void Game::Input()
 
 void Game::Update()
 {
-	//Uodate the enemy
-	int newx = sprites[ENEMY]->getLeft() + enemyMovementX;
-	int newy = sprites[ENEMY]->getTop() + enemyMovementY;
+	auto iter = sprites.begin();
+	Sprite* player = dynamic_cast<Sprite*>(*iter);
+	iter++;
+	Sprite* enemy = dynamic_cast<Sprite*>(*iter);
 
-	if (!sprites[ENEMY]->OutOfBounds(newx, newy) &&
-		!sprites[PLAYER]->Collides(newx, newy, sprites[ENEMY]->getWidth(), sprites[ENEMY]->getHeight()))
+	//Update the enemy
+	int newx = enemy->getLeft() + enemyMovementX;
+	int newy = enemy->getTop() + enemyMovementY;
+
+	if (!enemy->OutOfBounds(newx, newy) &&
+		!player->Collides(newx, newy, enemy->getWidth(), enemy->getHeight()))
 	{
-		sprites[ENEMY]->setLeft(newx);
-		sprites[ENEMY]->setTop(newy);
+		enemy->setLeft(newx);
+		enemy->setTop(newy);
 	}
 	else
 	{
-		if (newx >= Console::WindowWidth - sprites[ENEMY]->getWidth())
+		if (newx >= Console::WindowWidth - enemy->getWidth())
 			enemyMovementX = -1;
 
 		if (newx < 0)
@@ -431,68 +455,70 @@ void Game::Update()
 			ConsoleColor::Black,
 			"*",
 			"Missile",
-			sprites[ENEMY]->getLeft() + 3,
-			sprites[ENEMY]->getTop() + 3,
+			enemy->getLeft() + 3,
+			enemy->getTop() + 3,
 			0,
 			1
 			);
 
 		m->Enable();
-		sprites.PushBack(m);
+		sprites.push_back(m);
 	}
 
 	//Update the missiles
-	decltype(sprites.Size()) i;
-	for (i = 2; i < sprites.Size(); i++)
+	iter = sprites.begin();
+	iter++;
+	iter++;
+	Missile* m;
+	while (iter != sprites.end())
 	{
-		Missile* m = dynamic_cast<Missile*>(sprites[i]);
+		m = dynamic_cast<Missile*>(*iter);
 
-		if (m->isEnabled())
+		Missile::Delta dx;
+		Missile::Delta dy;
+		m->GetDeltas(dx, dy);
+
+		newx = m->getLeft() + dx;
+		newy = m->getTop() + dy;
+
+
+		//Check missile-enemy collision
+		if (m->Collides(enemy->getLeft(), enemy->getTop(), enemy->getWidth(), enemy->getHeight()))
 		{
-			Missile::Delta dx;
-			Missile::Delta dy;
-			m->GetDeltas(dx, dy);
-
-			newx = m->getLeft() + dx;
-			newy = m->getTop() + dy;
-
-			
-			//Check missile-enemy collision
-			if (m->Collides(sprites[ENEMY]->getLeft(), sprites[ENEMY]->getTop(), sprites[ENEMY]->getWidth(), sprites[ENEMY]->getHeight()))
-			{
-				delete sprites[i];
-				//sprites.erase(sprites.begin() + i--);
-				sprites.Erase(i);
-				score++;
-				continue;
-			}
-
-			
-			//Check missile-player collision
-			sprites[PLAYER]->setFg(ConsoleColor::Cyan);
-			if (m->Collides(sprites[PLAYER]->getLeft(), sprites[PLAYER]->getTop(), sprites[PLAYER]->getWidth(), sprites[PLAYER]->getHeight()))
-			{
-				delete sprites[i];
-				//sprites.erase(sprites.begin() + i--); 
-				sprites.Erase(i);
-				sprites[PLAYER]->setFg(ConsoleColor::Red);
-				continue;
-			}
-
-
-			//Check missile out of bounds collision
-			if (m->OutOfBounds(newx, newy))
-			{
-				delete sprites[i];
-				//sprites.erase(sprites.begin() + i--); 
-				sprites.Erase(i);
-				continue;
-			}
-
-			//Update missile position
-			m->setLeft(newx);
-			m->setTop(newy);
+			delete *iter;
+			sprites.erase(iter--);
+			score++;
+			++iter;
+			continue;
 		}
+
+
+		//Check missile-player collision
+		player->setFg(ConsoleColor::Cyan);
+		if (m->Collides(player->getLeft(), player->getTop(), player->getWidth(), player->getHeight()))
+		{
+			delete *iter;
+			sprites.erase(iter--);
+			player->setFg(ConsoleColor::Red);
+			++iter;
+			continue;
+		}
+
+
+		//Check missile out of bounds collision
+		if (m->OutOfBounds(newx, newy))
+		{
+			delete *iter;
+			sprites.erase(iter--);
+			++iter;
+			continue;
+		}
+
+		//Update missile position
+		m->setLeft(newx);
+		m->setTop(newy);
+		
+		++iter;
 	}
 
 	//Update time
@@ -506,6 +532,9 @@ void Game::Refresh() const
 	LockWindowUpdate(GetConsoleWindow());
 	Console::Clear();
 	
+	auto iter = sprites.begin();
+	Sprite* player = dynamic_cast<Sprite*>(*iter);
+
 	//Print stars
 	for (int i = 0; i < numStars; i++)
 		stars[i].Show(0 + mapX, 0 + mapY);
@@ -513,7 +542,7 @@ void Game::Refresh() const
 	//Print player's name
 	Console::SetCursorPosition(0, 0);
 	Console::ForegroundColor = ConsoleColor::Cyan;
-	cout << sprites[PLAYER]->getName() << "\t\t\t\t\t";
+	cout << player->getName() << "\t\t\t\t\t";
 
 	//Print score
 	Console::ForegroundColor = ConsoleColor::Yellow;
@@ -524,10 +553,14 @@ void Game::Refresh() const
 	cout << "Time " << time;
 
 	//Print sprites
-	//decltype(sprites.Size()) i;
-	for (int i = 0; i < sprites.Size(); i++)
-		sprites[i]->Show();
-
+	Sprite* sprite;
+	while (iter != sprites.end())
+	{
+		sprite = dynamic_cast<Sprite*>(*iter);
+		sprite->Show();
+		iter++;
+	}
+		
 	//Print cells
 	for (decltype(cells.size())i = 0; i < cells.size(); i++)
 		cells[i]->Show(Console::WindowWidth / 2 + mapX, Console::WindowHeight / 2);

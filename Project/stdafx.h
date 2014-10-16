@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <list>
 #include <Windows.h>
 using namespace System;
 #include <iostream>
@@ -17,6 +18,7 @@ using namespace std;
 #include "Missile.h"
 #include "Cell.h"
 #include "DList.h"
+
 #include "Game.h"
 
 
@@ -26,5 +28,3 @@ using namespace std;
 
 
 #pragma comment(lib, "user32.lib")
-
-

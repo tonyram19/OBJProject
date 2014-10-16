@@ -40,6 +40,5 @@ public:
 	//Stuff
 	virtual void Show() const;
 
-
 };
 
