@@ -113,6 +113,7 @@ Game::~Game()
 	}
 }
 
+
 void Game::LoadFromFile()
 {
 	int count;
@@ -139,15 +140,7 @@ void Game::LoadFromFile()
 			
 			fin.ignore(INT_MAX, '\n');
 
-			cells[i] = 
-				new Cell<>
-				(
-					x,
-					y,
-					(ConsoleColor)fg,
-					(ConsoleColor)bg,
-					(wchar_t) sym
-				);
+			cells[i] = new Cell<>(x, y, (ConsoleColor) fg, (ConsoleColor) bg, (wchar_t) sym);
 
 			if (fin.eof())
 				break;
@@ -176,14 +169,15 @@ void Game::LoadFromFile()
 			sprites.push_back(
 				new Sprite
 				(
-					(ConsoleColor)(unsigned int) fg,
-					(ConsoleColor)(unsigned int) bg,
+					(ConsoleColor) fg, 
+					(ConsoleColor) bg, 
 					buffer,
-					"Player",
-					5,
+					"Player", 
+					5, 
 					Console::WindowHeight / 2
 				)
 			);
+
 			i++;
 
 			if (fin.eof())
@@ -223,13 +217,14 @@ void Game::SaveToFile()
 	cout << "How many scores do you want to save? ";
 	cin >> oct >> howManyScores >> dec;
 
-	if (howManyScores > (int)highScores.size())
+	if (howManyScores > (int) highScores.size())
 		howManyScores = highScores.size();
 
 	if (filename == "")
 		filename = "HighScores";
 
 	fout.open(filename + ".txt");
+
 	if (fout.is_open())
 	{
 		for (int i = 0; i < howManyScores - 1; i++)
@@ -326,7 +321,7 @@ void Game::ShowHighScores()
 	cout << endl;
 #endif 
 
-	//Read binaryall
+	//Read binary All
 	fin.open("stats.bin", ios_base::binary);
 	if (fin.is_open())
 	{
@@ -349,7 +344,6 @@ void Game::ShowHighScores()
 		cout << "BY NAME ASCENDING" << endl << endl;
 		sort(highScores.begin(), highScores.end(), SortNameAscending);
 		for (i = 0; i < highScores.size(); i++)
-
 			cout << highScores[i].name << "\t" << highScores[i].score << "\t" << highScores[i].time << endl;
 		cout << endl;
 
@@ -440,11 +434,12 @@ void Game::Input()
 	//Toggle flags
 	if (GetAsyncKeyState(VK_F1))
 		flags ^= 1 << FLAG_AIMOVE;
+
 	if (GetAsyncKeyState(VK_F2))
 		flags ^= 1 << FLAG_AISHOOT;
+	
 	if (GetAsyncKeyState(VK_F3))
 		flags ^= 1 << FLAG_GHOST;
-
 
 	//Quit game
 	if (GetAsyncKeyState(VK_ESCAPE))
@@ -473,27 +468,24 @@ void Game::Input()
 	int dy = 0;
 
 	if (GetAsyncKeyState('W'))
-	{
 		dy = -1;
 
-	}
 	if (GetAsyncKeyState('S')) 
-	{ 
 		dy = 1;
 
-	}
 	if (GetAsyncKeyState('A'))
 	{
 		dx = -1;
 		mapX +=2;
 	}
+
 	if (GetAsyncKeyState('D'))
 	{
 		dx = 1;
 		mapX -=2;
 	}
-
-
+	
+	//Update player
 	if (dx || dy)
 	{
 		int newx = player->getLeft() + dx;
@@ -545,11 +537,10 @@ void Game::Update()
 	if (flags & (1 << FLAG_AISHOOT))
 	{
 		//Enemy Shooting
-		if (frames % (rand() % 15 + 8) == 0)
+		if (frames % (rand() % 15 + 5) == 0)
 		{
-			Missile* m =
-				new Missile
-				(
+			Missile* m = new Missile
+			(
 				ConsoleColor::Red,
 				ConsoleColor::Black,
 				"*",
@@ -558,7 +549,7 @@ void Game::Update()
 				enemy->getTop() + 1,
 				-1,
 				0
-				);
+			);
 
 			m->Enable();
 			sprites.push_back(m);
@@ -589,13 +580,13 @@ void Game::Update()
 			sprites.erase(iter--);
 			score++;
 			++iter;
-			PlaySound((LPCTSTR)SND_ALIAS_SYSTEMASTERISK, NULL, SND_ALIAS_ID | SND_ASYNC);
+			PlaySound((LPCTSTR)SND_ALIAS_SYSTEMASTERISK, NULL, SND_ALIAS_ID | SND_NOSTOP|  SND_ASYNC);
 			continue;
 		}
 
 
 		//Check missile-player collision
-		if (flags & (1 << FLAG_GHOST))
+		if (!(flags & (1 << FLAG_GHOST)))
 		{
 			player->setFg(ConsoleColor::Cyan);
 			if (m->Collides(player->getLeft(), player->getTop(), player->getWidth(), player->getHeight()))
@@ -605,7 +596,7 @@ void Game::Update()
 				player->setFg(ConsoleColor::Red);
 				++iter;
 				score -= 10;
-				PlaySound((LPCTSTR)SND_ALIAS_SYSTEMEXCLAMATION, NULL, SND_ALIAS_ID | SND_ASYNC);
+				PlaySound((LPCTSTR)SND_ALIAS_SYSTEMEXCLAMATION, NULL, SND_ALIAS_ID | SND_NOSTOP | SND_ASYNC);
 				continue;
 			}
 		}
@@ -668,7 +659,7 @@ void Game::Refresh() const
 	}
 
 	//Print flags
-	Console::SetCursorPosition(Console::WindowWidth >> 1, Console::WindowHeight);
+	Console::SetCursorPosition(Console::WindowWidth >> 1, Console::WindowHeight - 1);
 	for (int i = 7; i > 0; i--)
 	{ 
 		if (flags & (1 << i))
@@ -677,7 +668,6 @@ void Game::Refresh() const
 			cout << 0;
 	}
 	
-		
 	//Print cells
 	for (decltype(cells.size())i = 0; i < cells.size(); i++)
 		cells[i]->Show(Console::WindowWidth / 2 + mapX, Console::WindowHeight / 2);
