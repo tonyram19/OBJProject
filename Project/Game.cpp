@@ -33,10 +33,16 @@ Game::Game()
 	score = 0;
 	time = 0;
 
-	enemyMovementX = 1;
-	enemyMovementY = 0;
+	enemyMovementX = 0;
+	enemyMovementY = 1;
 	mapX = 0;
 	mapY = 0;
+
+	flags = 1;
+
+	flags |= 1 << FLAG_ALIVE;
+	flags |= 1 << FLAG_AIMOVE;
+	flags |= 1 << FLAG_AISHOOT;
 
 	this->LoadFromFile();
 	
@@ -111,6 +117,7 @@ void Game::LoadFromFile()
 {
 	int count;
 
+	//Cells
 	fin.open("cells.txt");
 	if (fin.is_open())
 	{
@@ -133,7 +140,8 @@ void Game::LoadFromFile()
 			fin.ignore(INT_MAX, '\n');
 
 			cells[i] = 
-				new Cell<>(
+				new Cell<>
+				(
 					x,
 					y,
 					(ConsoleColor)fg,
@@ -150,6 +158,7 @@ void Game::LoadFromFile()
 
 	string buffer;
 
+	//Sprites images
 	fin.open("images.txt");
 
 	if (fin.is_open())
@@ -171,7 +180,7 @@ void Game::LoadFromFile()
 					(ConsoleColor)(unsigned int) bg,
 					buffer,
 					"Player",
-					Console::WindowWidth / 2,
+					5,
 					Console::WindowHeight / 2
 				)
 			);
@@ -185,6 +194,7 @@ void Game::LoadFromFile()
 		iter++; 
 		Sprite* enemy = dynamic_cast<Sprite*>(*iter);
 		enemy->setTop(3);
+		enemy->setLeft(Console::WindowWidth - enemy->getWidth() - 2);
 
 		fin.close();
 	}
@@ -201,10 +211,34 @@ double Game::DiffClock(clock_t clock1, clock_t clock2)
 
 void Game::SaveToFile()
 {
-	ofstream fout("stats.txt", ios_base::app);
 
+	Console::Clear();
+	
+	string filename;
+	int howManyScores;
+	
+	cout << "Specify a file name to save the high scores: ";
+	cin >> filename;
+
+	cout << "How many scores do you want to save? ";
+	cin >> oct >> howManyScores >> dec;
+
+	if (howManyScores > (int)highScores.size())
+		howManyScores = highScores.size();
+
+	if (filename == "")
+		filename = "HighScores";
+
+	fout.open(filename + ".txt");
 	if (fout.is_open())
 	{
+		for (int i = 0; i < howManyScores - 1; i++)
+		{
+			fout << highScores[i].name << "\t";
+			fout << highScores[i].score << "\t";
+			fout << highScores[i].time << "\n";	
+		}
+
 		auto iter = sprites.begin();
 		Sprite* player = dynamic_cast<Sprite*>(*iter);
 		fout << player->getName() << "\t";
@@ -213,6 +247,7 @@ void Game::SaveToFile()
 
 		fout.close();
 	}
+
 }
 
 void Game::SaveToBinaryFile()
@@ -237,8 +272,6 @@ void Game::SaveToBinaryFile()
 void Game::ShowHighScores()
 {
 	//BinaryData data;
-	vector<BinaryData> vec;
-
 	cout << "HIGH SCORES" << endl << endl;
 
 #if 0
@@ -300,47 +333,45 @@ void Game::ShowHighScores()
 		int count;
 
 		fin.seekg(0, ios_base::end);
-		count = (int)fin.tellg();
+		count = (int) fin.tellg();
 		count = count / sizeof(BinaryData);
 		fin.seekg(0, ios_base::beg);
-		vec.resize(count);
+		highScores.resize(count);
 
-		cout << "BINARY ALL:" << endl << endl;
 		cout << "Name\tScore\tTime\t" << endl << endl;
 
 		if (count > 0)
-		{
-			fin.read((char*)&vec[0], sizeof(BinaryData) * count);
-		}
+			fin.read((char*)&highScores[0], sizeof(BinaryData) * count);
 
-		decltype(vec.size()) i;
+		decltype(highScores.size()) i;
 		
 		//Sort by name ascending
 		cout << "BY NAME ASCENDING" << endl << endl;
-		sort(vec.begin(), vec.end(), SortNameAscending);
-		for (i = 0; i < vec.size(); i++)
-			cout << vec[i].name << "\t" << vec[i].score << "\t" << vec[i].time << endl;
+		sort(highScores.begin(), highScores.end(), SortNameAscending);
+		for (i = 0; i < highScores.size(); i++)
+
+			cout << highScores[i].name << "\t" << highScores[i].score << "\t" << highScores[i].time << endl;
 		cout << endl;
 
 		//Sort by name descending
 		cout << "BY NAME DESCENDING" << endl << endl;
-		sort(vec.begin(), vec.end(), SortNameDescending);
-		for (i = 0; i < vec.size(); i++)
-			cout << vec[i].name << "\t" << vec[i].score << "\t" << vec[i].time << endl;
+		sort(highScores.begin(), highScores.end(), SortNameDescending);
+		for (i = 0; i < highScores.size(); i++)
+			cout << highScores[i].name << "\t" << highScores[i].score << "\t" << highScores[i].time << endl;
 		cout << endl;
 
 		//Sort by time descending
 		cout << "BY TIME DESCENDING" << endl << endl;
-		sort(vec.begin(), vec.end(), SortTimeDescending);
-		for (i = 0; i < vec.size(); i++)
-			cout << vec[i].name << "\t" << vec[i].score << "\t" << vec[i].time << endl;
+		sort(highScores.begin(), highScores.end(), SortTimeDescending);
+		for (i = 0; i < highScores.size(); i++)
+			cout << highScores[i].name << "\t" << highScores[i].score << "\t" << highScores[i].time << endl;
 		cout << endl;
 
 		//Sort by score ascending
 		cout << "BY SCORE DESCENDING" << endl << endl;
-		sort(vec.begin(), vec.end(), SortScoreDescending);
-		for (i = 0; i < vec.size(); i++)
-			cout << vec[i].name << "\t" << vec[i].score << "\t" << vec[i].time << endl;
+		sort(highScores.begin(), highScores.end(), SortScoreDescending);
+		for (i = 0; i < highScores.size(); i++)
+			cout << highScores[i].name << "\t" << highScores[i].score << "\t" << highScores[i].time << endl;
 
 	}
 
@@ -382,7 +413,7 @@ void Game::Play()
 	//Start game - Main loop
 	Util::EOLWrap(false);
 	beginTime = clock();
-	while (gameIsRunning)
+	while (flags & (1 << FLAG_ALIVE))
 	{
 		Input();
 		Update();
@@ -406,9 +437,18 @@ void Game::Input()
 	iter++;
 	Sprite* enemy = dynamic_cast<Sprite*>(*iter);
 
+	//Toggle flags
+	if (GetAsyncKeyState(VK_F1))
+		flags ^= 1 << FLAG_AIMOVE;
+	if (GetAsyncKeyState(VK_F2))
+		flags ^= 1 << FLAG_AISHOOT;
+	if (GetAsyncKeyState(VK_F3))
+		flags ^= 1 << FLAG_GHOST;
+
+
 	//Quit game
 	if (GetAsyncKeyState(VK_ESCAPE))
-		gameIsRunning = false;
+		flags&= ~(1 << FLAG_ALIVE);
 	
 	//Player shooting
 	if (GetAsyncKeyState(VK_SPACE))
@@ -419,10 +459,10 @@ void Game::Input()
 			ConsoleColor::Black,
 			"*",
 			"Missile",
-			player->getLeft() + 3,
-			player->getTop() - 2,
-			0,
-			-1
+			player->getLeft() + 6,
+			player->getTop() + 3,
+			1,
+			0
 		);
 		
 		m->Enable();
@@ -445,12 +485,12 @@ void Game::Input()
 	if (GetAsyncKeyState('A'))
 	{
 		dx = -1;
-		mapX++;
+		mapX +=2;
 	}
 	if (GetAsyncKeyState('D'))
 	{
 		dx = 1;
-		mapX--;
+		mapX -=2;
 	}
 
 
@@ -463,7 +503,9 @@ void Game::Input()
 			&&
 			!player->OutOfBounds(newx, newy))
 		{
-			player->setLeft(newx);
+			if (newx <= Console::WindowWidth / 2 - 15)
+				player->setLeft(newx);
+
 			player->setTop(newy);
 		}
 	}
@@ -477,42 +519,50 @@ void Game::Update()
 	iter++;
 	Sprite* enemy = dynamic_cast<Sprite*>(*iter);
 
-	//Update the enemy
 	int newx = enemy->getLeft() + enemyMovementX;
 	int newy = enemy->getTop() + enemyMovementY;
 
-	if (!enemy->OutOfBounds(newx, newy) &&
-		!player->Collides(newx, newy, enemy->getWidth(), enemy->getHeight()))
+	//Update the enemy
+	if (flags & (1 << FLAG_AIMOVE))
 	{
-		enemy->setLeft(newx);
-		enemy->setTop(newy);
+		
+		if (!enemy->OutOfBounds(newx, newy) &&
+			!player->Collides(newx, newy, enemy->getWidth(), enemy->getHeight()))
+		{
+			enemy->setLeft(newx);
+			enemy->setTop(newy);
+		}
+		else
+		{
+			if (newy >= Console::WindowHeight - enemy->getHeight())
+				enemyMovementY = -1;
+
+			if (newy <= 0)
+				enemyMovementY = 1;
+		}
 	}
-	else
+
+	if (flags & (1 << FLAG_AISHOOT))
 	{
-		if (newx >= Console::WindowWidth - enemy->getWidth())
-			enemyMovementX = -1;
+		//Enemy Shooting
+		if (frames % (rand() % 15 + 8) == 0)
+		{
+			Missile* m =
+				new Missile
+				(
+				ConsoleColor::Red,
+				ConsoleColor::Black,
+				"*",
+				"Missile",
+				enemy->getLeft() - 4,
+				enemy->getTop() + 1,
+				-1,
+				0
+				);
 
-		if (newx < 0)
-			enemyMovementX = 1;
-	}
-
-	//Enemy Shooting
-	if (frames % 75 == 0)
-	{
-		Missile* m = new Missile
-			(
-			ConsoleColor::Red,
-			ConsoleColor::Black,
-			"*",
-			"Missile",
-			enemy->getLeft() + 3,
-			enemy->getTop() + 3,
-			0,
-			1
-			);
-
-		m->Enable();
-		sprites.push_back(m);
+			m->Enable();
+			sprites.push_back(m);
+		}
 	}
 
 	//Update the missiles
@@ -539,19 +589,25 @@ void Game::Update()
 			sprites.erase(iter--);
 			score++;
 			++iter;
+			PlaySound((LPCTSTR)SND_ALIAS_SYSTEMASTERISK, NULL, SND_ALIAS_ID | SND_ASYNC);
 			continue;
 		}
 
 
 		//Check missile-player collision
-		player->setFg(ConsoleColor::Cyan);
-		if (m->Collides(player->getLeft(), player->getTop(), player->getWidth(), player->getHeight()))
+		if (flags & (1 << FLAG_GHOST))
 		{
-			delete *iter;
-			sprites.erase(iter--);
-			player->setFg(ConsoleColor::Red);
-			++iter;
-			continue;
+			player->setFg(ConsoleColor::Cyan);
+			if (m->Collides(player->getLeft(), player->getTop(), player->getWidth(), player->getHeight()))
+			{
+				delete *iter;
+				sprites.erase(iter--);
+				player->setFg(ConsoleColor::Red);
+				++iter;
+				score -= 10;
+				PlaySound((LPCTSTR)SND_ALIAS_SYSTEMEXCLAMATION, NULL, SND_ALIAS_ID | SND_ASYNC);
+				continue;
+			}
 		}
 
 
@@ -592,11 +648,11 @@ void Game::Refresh() const
 	//Print player's name
 	Console::SetCursorPosition(0, 0);
 	Console::ForegroundColor = ConsoleColor::Cyan;
-	cout << player->getName() << "\t\t\t\t\t";
+	cout << player->getName() << "\t\t\t\t\t\t";
 
 	//Print score
 	Console::ForegroundColor = ConsoleColor::Yellow;
-	cout << "Score: " << score << "\t\t\t";
+	cout << "Score: " << hex << score << dec << "\t\t\t\t\t";
 	
 	//Print time
 	Console::ForegroundColor = ConsoleColor::Magenta;
@@ -610,6 +666,17 @@ void Game::Refresh() const
 		sprite->Show();
 		iter++;
 	}
+
+	//Print flags
+	Console::SetCursorPosition(Console::WindowWidth >> 1, Console::WindowHeight);
+	for (int i = 7; i > 0; i--)
+	{ 
+		if (flags & (1 << i))
+			cout << 1;
+		else
+			cout << 0;
+	}
+	
 		
 	//Print cells
 	for (decltype(cells.size())i = 0; i < cells.size(); i++)
@@ -619,8 +686,3 @@ void Game::Refresh() const
 
 	System::Threading::Thread::Sleep(15);
 }
-
-
-
-
-

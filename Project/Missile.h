@@ -24,7 +24,5 @@ private:
 	vector<Delta> velocity;
 	bool enabled;
 
-	
-
 };
 

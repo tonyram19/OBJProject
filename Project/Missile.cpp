@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "Missile.h"
 
-
 Missile::Missile(ConsoleColor fg, ConsoleColor bg, string text, string name, int left, int top, Delta dX, Delta dY) :
 Sprite(fg, bg, text, name, left, top)
 {

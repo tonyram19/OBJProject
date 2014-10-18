@@ -22,10 +22,9 @@ using namespace std;
 
 #include "Game.h"
 
-
 #define _CRTDBG_MAP_ALLOC
 #include <cstdlib>
 #include <crtdbg.h>
 
-
 #pragma comment(lib, "user32.lib")
+#pragma comment (lib , "winmm.lib")

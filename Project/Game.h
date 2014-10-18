@@ -4,6 +4,19 @@
 #define ENEMY 1
 #define MISSILE 2
 
+#define FLAG_ALIVE 1
+#define FLAG_GHOST 2
+#define FLAG_AIMOVE 3
+#define FLAG_AISHOOT 4
+
+struct BinaryData
+{
+	char name[31];
+	int score;
+	double time;
+};
+
+
 class Game
 {
 
@@ -12,6 +25,7 @@ private:
 	list<Sprite*> sprites;
 	vector<Cell<>*> cells;
 	Cell<>* stars;
+	vector<BinaryData> highScores;
 
 	ofstream fout;
 	ifstream fin;
@@ -30,6 +44,9 @@ private:
 	int enemyMovementY;
 	int mapX;
 	int mapY;
+
+	char flags;
+
 
 public:
 
@@ -50,9 +67,3 @@ public:
 
 };
 
-struct BinaryData
-{
-	char name[31];
-	int score;
-	double time;
-};
